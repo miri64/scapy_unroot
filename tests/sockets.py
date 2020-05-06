@@ -45,7 +45,7 @@ class TestSocketBase(unittest.TestCase):
         sock = scapy_unroot.sockets.ScapyUnrootSocket(
             "test-server", "/tmp", scapy_conf_type, **args
         )
-        _acquire_socket_lock.assert_called_once()
+        _acquire_socket_lock.assert_called_once_with()
         _release_socket_lock.assert_called_once_with(
             _acquire_socket_lock.return_value
         )
@@ -133,7 +133,7 @@ class TestSocketInit(TestSocketBase):
             error_code = '{{"error":{{"type": {},"errno":{}}}}}' \
                          .format(scapy_unroot.daemon.OS, errno.EPERM)
             self._test_init(socket_mock, "xfogxcno", error_code)
-            socket_mock.close.assert_called()
+            self.assertTrue(socket_mock.close.called)
 
     def test_init__os_error_no_msg(self, socket_mock):
         with self.assertRaisesRegex(OSError, r"^\[Errno 243\]\s*$"):
@@ -181,14 +181,14 @@ class TestSocketClose(TestSocketBase):
         sock.ins.send.assert_called_with(
             json.dumps(exp_req, separators=(",", ":")).encode()
         )
-        sock.ins.close.assert_called()
-        sock.command_socket.close.assert_called()
+        self.assertTrue(sock.ins.close.called)
+        self.assertTrue(sock.command_socket.close.called)
         return sock
 
     def test_close__success(self, socket_mock):
         sock = self._test_close_success(socket_mock, "L2socket")
-        sock.ins.close.assert_called()
-        sock.command_socket.close.assert_called()
+        self.assertTrue(sock.ins.close.called)
+        self.assertTrue(sock.command_socket.close.called)
 
     def test_close__success_listen_socket(self, socket_mock):
         sock = self._test_close_success(socket_mock, "L2listen")
@@ -207,8 +207,8 @@ class TestSocketClose(TestSocketBase):
         self.assertIn("WARNING:scapy_unroot.sockets:Exception on sending "
                       "close to daemon ''",
                       cm.output)
-        sock.ins.close.assert_called()
-        sock.outs.close.assert_called()
+        self.assertTrue(sock.ins.close.called)
+        self.assertTrue(sock.outs.close.called)
 
 
 class TestWithSocketInitialized(TestSocketBase):

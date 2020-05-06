@@ -104,7 +104,8 @@ class TestRunDaemonSetup(TestRunDaemonBase):
     def _assert_socket_correct(self, chown, chmod):
         super()._assert_socket_correct(chown, chmod)
         self.daemon.socket.bind.assert_called_once_with(self.daemon.socketname)
-        self.daemon.socket.listen.assert_called_once()
+        self.assertTrue(self.daemon.socket.listen.called)
+        self.assertEqual(1, self.daemon.socket.listen.call_count)
 
     @unittest.mock.patch('os.path.exists', return_value=True)
     @unittest.mock.patch('os.unlink')
@@ -150,7 +151,7 @@ class TestRunFunction(unittest.TestCase):
         # constructor was called
         getgrnam.assert_called_with("group")
         # run loop was started
-        select.assert_called()
+        self.assertTrue(select.called)  # assert_called not available in py35
 
     @unittest.mock.patch.object(sys, 'argv', ["run"])
     @unittest.mock.patch('sys.stderr', new_callable=io.StringIO)
@@ -159,7 +160,7 @@ class TestRunFunction(unittest.TestCase):
                         unlink, chown, chmod, select):
         with self.assertRaises(InterruptedError):
             scapy_unroot.daemon.run()
-        exit.assert_called()
+        self.assertTrue(exit.called)    # assert_called not available in py35
         # exit was not called with argument 0
         self.assertNotEqual(unittest.mock.call(0), exit.call_args)
         # constructor was not called
@@ -201,13 +202,15 @@ class TestRunDaemonized(TestRunDaemonBase):
         fork.assert_has_calls([unittest.mock.call(), unittest.mock.call()])
         exit.assert_not_called()
         umask.assert_called_once_with(0)
-        setsid.assert_called_once()
+        self.assertTrue(setsid.called)  # assert_called_once not in py35
+        self.assertEqual(1, setsid.call_count)
         chdir.assert_called_once_with("/")
-        getpid.assert_called_once()
+        self.assertTrue(getpid.called)
+        self.assertEqual(1, getpid.call_count)
         # pidfile is now set
         self.assertEqual(os.path.join(self.run_dir.name, "pidfile"),
                          self.daemon.pidfile)
-        dup2.assert_called()
+        self.assertTrue(dup2.called)    # assert_called not available in py35
         # run loop was started
         select.assert_called_with(set(self.daemon.read_sockets))
         self.assertTrue(os.path.exists(self.daemon.pidfile))
@@ -231,7 +234,8 @@ class TestRunDaemonized(TestRunDaemonBase):
         self.assertIsNone(self.daemon.pidfile)
         with self.assertRaises(InterruptedError):
             self.daemon.run()
-        fork.assert_called_once()
+        self.assertTrue(fork.called)
+        self.assertEqual(1, fork.call_count)
         exit.assert_any_call(0)
         umask.assert_not_called()
         setsid.assert_not_called()
@@ -254,7 +258,8 @@ class TestRunDaemonized(TestRunDaemonBase):
         fork.assert_has_calls([unittest.mock.call(), unittest.mock.call()])
         exit.assert_any_call(0)
         umask.assert_called_once_with(0)
-        setsid.assert_called_once()
+        self.assertTrue(setsid.called)
+        self.assertEqual(1, setsid.call_count)
         chdir.assert_called_once_with("/")
         # getpid gets called somewhere
         # but pidfile stays unset
@@ -277,8 +282,9 @@ class TestRunDaemonized(TestRunDaemonBase):
         # check if log error was printed correctly
         self.assertIn("ERROR:scapy_unroot.daemon.UnrootDaemon:"
                       "fork #1 failed: 249 (test)", cm.output)
-        fork.assert_called_once()
-        exit.assert_called()
+        self.assertTrue(fork.called)
+        self.assertEqual(1, fork.call_count)
+        self.assertTrue(exit.called)
         # sys.exit was never called with 0
         self.assertNotIn(unittest.mock.call(0), exit.call_args)
         umask.assert_not_called()
@@ -306,11 +312,12 @@ class TestRunDaemonized(TestRunDaemonBase):
         self.assertIn("ERROR:scapy_unroot.daemon.UnrootDaemon:"
                       "fork #2 failed: 72 (testing)", cm.output)
         fork.assert_has_calls([unittest.mock.call(), unittest.mock.call()])
-        exit.assert_called()
+        self.assertTrue(exit.called)    # assert_called not available in py35
         # sys.exit was never called with 0
         self.assertNotIn(unittest.mock.call(0), exit.call_args)
         umask.assert_called_once_with(0)
-        setsid.assert_called_once()
+        self.assertTrue(setsid.called)
+        self.assertEqual(1, setsid.call_count)
         chdir.assert_called_once_with("/")
         # getpid gets called somewhere
         # but pidfile stays unset
