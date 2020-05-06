@@ -58,7 +58,7 @@ class ScapyUnrootSocket(SuperSocket):
             json.dumps(req, separators=(",", ":")).encode()
         )
         res = self.command_socket.recv(daemon.DAEMON_MTU)
-        resp = json.loads(res)
+        resp = json.loads(res.decode() if isinstance(res, bytes) else res)
         if "error" in resp:
             err_type = resp["error"].get("type")
             if err_type in ERR_EXCEPTIONS:
@@ -143,7 +143,10 @@ class ScapyUnrootSocket(SuperSocket):
             raise ValueError("negative buffersize in recv")
         res = {}
         while "recv" not in res:
-            res = json.loads(self.ins.recv(daemon.DAEMON_MTU))
+            data = self.ins.recv(daemon.DAEMON_MTU)
+            res = json.loads(
+                data.decode() if isinstance(data, bytes) else data
+            )
             if "recv" not in res:
                 logger.error("Received unexpected JSON object {}".format(res))
         obj = res["recv"]

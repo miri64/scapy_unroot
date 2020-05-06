@@ -198,7 +198,7 @@ class UnrootDaemon:
                             # don't bother trying to parse this
                             continue
                         try:
-                            req = json.loads(b)
+                            req = json.loads(b.decode())
                         except json.decoder.JSONDecodeError:
                             # silently ignore JSON decode errors as empty
                             # messages are exchanged between UNIX domain stream

@@ -467,7 +467,9 @@ class TestSocketInteraction(TestRunDaemonThreaded):
             }).encode())
             self.assertTrue(self.wait_for_next_select(1))
             sock.settimeout(CONNECTION_TIMEOUT)
-            res = json.loads(sock.recv(scapy_unroot.daemon.DAEMON_MTU))
+            res = json.loads(
+                sock.recv(scapy_unroot.daemon.DAEMON_MTU).decode()
+            )
             self.assertIn("error", res)
             self.assertEqual(scapy_unroot.daemon.UNKNOWN_OP,
                              res["error"]["type"])
@@ -489,7 +491,9 @@ class TestSocketInteraction(TestRunDaemonThreaded):
             }).encode())
             self.assertTrue(self.wait_for_next_select(1))
             sock.settimeout(CONNECTION_TIMEOUT)
-            res = json.loads(sock.recv(scapy_unroot.daemon.DAEMON_MTU))
+            res = json.loads(
+                sock.recv(scapy_unroot.daemon.DAEMON_MTU).decode()
+            )
             self.assertIn("error", res)
             self.assertEqual(scapy_unroot.daemon.UNKNOWN_TYPE,
                              res["error"]["type"])
@@ -520,7 +524,9 @@ class TestSocketInteraction(TestRunDaemonThreaded):
         self.assertEqual(1, len(self.daemon.read_sockets))
         self.assertTrue(self.wait_for_next_select(1))
         sock.settimeout(CONNECTION_TIMEOUT)
-        res = json.loads(sock.recv(scapy_unroot.daemon.DAEMON_MTU))
+        res = json.loads(
+            sock.recv(scapy_unroot.daemon.DAEMON_MTU).decode()
+        )
         self.assertIn("error", res)
         self.assertEqual(scapy_unroot.daemon.OS, res["error"]["type"])
         self.assertEqual(1, len(self.daemon.read_sockets))
@@ -535,7 +541,9 @@ class TestSocketInteraction(TestRunDaemonThreaded):
                                          init_args)
             self.assertTrue(self.wait_for_next_select(1))
             sock.settimeout(CONNECTION_TIMEOUT)
-            res = json.loads(sock.recv(scapy_unroot.daemon.DAEMON_MTU))
+            res = json.loads(
+                sock.recv(scapy_unroot.daemon.DAEMON_MTU).decode()
+            )
             self.assertIn("success", res)
             if init_args is None:
                 scapy_socket_mock.assert_called_once_with()
@@ -562,7 +570,9 @@ class TestSocketInteraction(TestRunDaemonThreaded):
                                          init_args)
             self.assertTrue(self.wait_for_next_select(1))
             sock.settimeout(CONNECTION_TIMEOUT)
-            res = json.loads(sock.recv(scapy_unroot.daemon.DAEMON_MTU))
+            res = json.loads(
+                sock.recv(scapy_unroot.daemon.DAEMON_MTU).decode()
+            )
             self.assertIn("error", res)
             self.assertEqual(scapy_unroot.daemon.UNKNOWN_TYPE,
                              res["error"]["type"])
@@ -680,7 +690,9 @@ class TestSocketInteraction(TestRunDaemonThreaded):
             self._test_init_success_w_sock("L2listen", sock)
             sock.send(json.dumps({"op": "close"}).encode())
             self.assertTrue(self.wait_for_next_select(1))
-            res = json.loads(sock.recv(scapy_unroot.daemon.DAEMON_MTU))
+            res = json.loads(
+                sock.recv(scapy_unroot.daemon.DAEMON_MTU).decode()
+            )
             self.assertIn("closed", res)
             self.assertDictEqual({}, self.daemon.clients)
 
@@ -693,7 +705,9 @@ class TestSocketInteraction(TestRunDaemonThreaded):
             with self.assertLogs('scapy_unroot.daemon', level='WARNING') as cm:
                 sock.send(json.dumps({"op": "close"}).encode())
                 self.assertTrue(self.wait_for_next_select(1))
-                res = json.loads(sock.recv(scapy_unroot.daemon.DAEMON_MTU))
+            res = json.loads(
+                sock.recv(scapy_unroot.daemon.DAEMON_MTU).decode()
+            )
             self.assertIn("closed", res)
             self.assertDictEqual({}, self.daemon.clients)
             # check if log error was printed correctly
@@ -711,7 +725,9 @@ class TestSocketInteraction(TestRunDaemonThreaded):
                 "data": base64.b64encode(b"test").decode(),
             }).encode())
             sock.settimeout(CONNECTION_TIMEOUT)
-            res = json.loads(sock.recv(scapy_unroot.daemon.DAEMON_MTU))
+            res = json.loads(
+                sock.recv(scapy_unroot.daemon.DAEMON_MTU).decode()
+            )
             self.assertIn("error", res)
             self.assertEqual(scapy_unroot.daemon.UNINITILIZED,
                              res["error"]["type"])
@@ -727,7 +743,9 @@ class TestSocketInteraction(TestRunDaemonThreaded):
                 "data": base64.b64encode(b"test").decode(),
             }).encode())
             sock.settimeout(CONNECTION_TIMEOUT)
-            res = json.loads(sock.recv(scapy_unroot.daemon.DAEMON_MTU))
+            res = json.loads(
+                sock.recv(scapy_unroot.daemon.DAEMON_MTU).decode()
+            )
             self.assertIn("error", res)
             self.assertEqual(scapy_unroot.daemon.UNKNOWN_TYPE,
                              res["error"]["type"])
@@ -742,7 +760,9 @@ class TestSocketInteraction(TestRunDaemonThreaded):
                 "data": "*#%/\\\0",
             }).encode())
             sock.settimeout(CONNECTION_TIMEOUT)
-            res = json.loads(sock.recv(scapy_unroot.daemon.DAEMON_MTU))
+            res = json.loads(
+                sock.recv(scapy_unroot.daemon.DAEMON_MTU).decode()
+            )
             self.assertIn("error", res)
             self.assertEqual(scapy_unroot.daemon.INVALID_DATA,
                              res["error"]["type"])
@@ -757,7 +777,9 @@ class TestSocketInteraction(TestRunDaemonThreaded):
         req["op"] = "send"
         sock.send(json.dumps(req).encode())
         sock.settimeout(CONNECTION_TIMEOUT)
-        res = json.loads(sock.recv(scapy_unroot.daemon.DAEMON_MTU))
+        res = json.loads(
+            sock.recv(scapy_unroot.daemon.DAEMON_MTU).decode()
+        )
         return supersocket, res
 
     def _test_send_success(self, packet_type=None):
